@@ -1,0 +1,99 @@
+import std/string
+import std/collections
+import std/test { assert_eq_str, assert_eq_int, assert_true, assert_false, assert_msg }
+import "./lib" { Command, Arg, Matches }
+
+// A command with a flag, an option, and a positional, none required.
+fun base() -> Command {
+    return Command.new("tool").args([Arg.flag("verbose", "v", "verbose output"), Arg.option("output", "o", "output file"), Arg.positional("name", "the name")])
+}
+
+// Parse, failing the test with the error if it does not succeed.
+fun parsed(cmd: Command, av: List<String>) -> Matches {
+    return match cmd.parse(av) {
+        Ok(m) -> m,
+        Err(e) -> {
+            assert_msg(false, e.to_string())
+            let p: List<String> = []
+            Matches { values: Map.new(), positionals: p, help_seen: false }
+        },
+    }
+}
+
+fun test_long_and_short_flags() {
+    assert_true(parsed(base(), ["tool", "--verbose"]).flag("verbose"))
+    assert_true(parsed(base(), ["tool", "-v"]).flag("verbose"))
+    assert_false(parsed(base(), ["tool"]).flag("verbose"))
+}
+
+fun test_option_three_forms() {
+    assert_eq_str(parsed(base(), ["tool", "--output", "out.txt"]).get_or("output", ""), "out.txt")
+    assert_eq_str(parsed(base(), ["tool", "--output=out2.txt"]).get_or("output", ""), "out2.txt")
+    assert_eq_str(parsed(base(), ["tool", "-o", "out3.txt"]).get_or("output", ""), "out3.txt")
+}
+
+fun test_default_when_absent() {
+    assert_eq_str(parsed(base(), ["tool"]).get_or("output", "default.txt"), "default.txt")
+}
+
+fun test_positionals() {
+    let m = parsed(base(), ["tool", "Alice", "Bob"])
+    assert_eq_str(m.get_or("name", ""), "Alice")
+    assert_eq_int(m.rest().len(), 2)
+    match m.positional(1) {
+        Some(v) -> assert_eq_str(v, "Bob"),
+        None -> assert_msg(false, "p1"),
+    }
+    match m.positional(5) {
+        Some(v) -> assert_msg(false, "out of range"),
+        None -> assert_true(true),
+    }
+}
+
+fun test_mixed() {
+    let m = parsed(base(), ["tool", "-v", "--output", "f.txt", "thing"])
+    assert_true(m.flag("verbose"))
+    assert_eq_str(m.get_or("output", ""), "f.txt")
+    assert_eq_str(m.get_or("name", ""), "thing")
+}
+
+fun test_help() {
+    assert_true(parsed(base(), ["tool", "--help"]).help())
+    assert_true(parsed(base(), ["tool", "-h"]).help())
+    assert_false(parsed(base(), ["tool"]).help())
+}
+
+fun test_required_missing() {
+    let cmd = Command.new("tool").args([Arg.required("input", "i", "input")])
+    match cmd.parse(["tool"]) {
+        Ok(m) -> assert_msg(false, "expected missing required"),
+        Err(e) -> assert_true(e.to_string().contains("input")),
+    }
+}
+
+fun test_required_present() {
+    let cmd = Command.new("tool").args([Arg.required("input", "i", "input")])
+    assert_eq_str(parsed(cmd, ["tool", "-i", "data.csv"]).get_or("input", ""), "data.csv")
+}
+
+fun test_unknown_arg() {
+    match base().parse(["tool", "--nope"]) {
+        Ok(m) -> assert_msg(false, "expected unknown"),
+        Err(e) -> assert_true(e.to_string().contains("--nope")),
+    }
+}
+
+fun test_missing_value() {
+    match base().parse(["tool", "--output"]) {
+        Ok(m) -> assert_msg(false, "expected missing value"),
+        Err(e) -> assert_true(e.to_string().contains("output")),
+    }
+}
+
+fun test_usage_contains_parts() {
+    let u = Command.new("tool").version("1.0").about("a tool").args([Arg.option("output", "o", "where to write"), Arg.positional("name", "the name")]).usage()
+    assert_true(u.contains("tool 1.0"))
+    assert_true(u.contains("--output"))
+    assert_true(u.contains("<name>"))
+    assert_true(u.contains("--help"))
+}
