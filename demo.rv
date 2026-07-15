@@ -8,7 +8,13 @@ import std/env { args }
 import "./lib" { Command, Arg }
 
 fun main() {
-    let cmd = Command.new("greet").version("1.0").about("a tiny greeter").args([Arg.flag("loud", "l", "shout the greeting"), Arg.option("times", "n", "how many times to greet"), Arg.positional("name", "who to greet")])
+    let cmd = Command.new("greet").version("1.0").about("a tiny greeter").args(
+        [
+            Arg.flag("loud", "l", "shout the greeting"),
+            Arg.option("times", "n", "how many times to greet"),
+            Arg.positional("name", "who to greet"),
+        ],
+    )
     match cmd.parse(args()) {
         Ok(m) -> {
             if m.help() {
