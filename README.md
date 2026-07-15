@@ -1,5 +1,7 @@
 # raven-clap
 
+[![CI](https://github.com/martian56/raven-clap/actions/workflows/ci.yml/badge.svg)](https://github.com/martian56/raven-clap/actions/workflows/ci.yml)
+
 Command-line argument parsing for Raven. You describe the flags, options, and
 positionals your program takes, hand it the process arguments, and get back a
 small object to read the values out of. The same description also builds a
@@ -9,12 +11,12 @@ small object to read the values out of. The same description also builds a
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-clap" = "0.1"
+"github.com/martian56/raven-clap" = "v0.1.0"
 ```
 
 ## Usage
 
-```raven
+```rust
 import "github.com/martian56/raven-clap" { Command, Arg }
 import std/env { args }
 

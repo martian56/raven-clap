@@ -5,7 +5,13 @@ import "./lib" { Command, Arg, Matches }
 
 // A command with a flag, an option, and a positional, none required.
 fun base() -> Command {
-    return Command.new("tool").args([Arg.flag("verbose", "v", "verbose output"), Arg.option("output", "o", "output file"), Arg.positional("name", "the name")])
+    return Command.new("tool").args(
+        [
+            Arg.flag("verbose", "v", "verbose output"),
+            Arg.option("output", "o", "output file"),
+            Arg.positional("name", "the name"),
+        ],
+    )
 }
 
 // Parse, failing the test with the error if it does not succeed.
@@ -91,7 +97,9 @@ fun test_missing_value() {
 }
 
 fun test_usage_contains_parts() {
-    let u = Command.new("tool").version("1.0").about("a tool").args([Arg.option("output", "o", "where to write"), Arg.positional("name", "the name")]).usage()
+    let u = Command.new("tool").version("1.0").about("a tool").args(
+        [Arg.option("output", "o", "where to write"), Arg.positional("name", "the name")],
+    ).usage()
     assert_true(u.contains("tool 1.0"))
     assert_true(u.contains("--output"))
     assert_true(u.contains("<name>"))
