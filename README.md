@@ -17,30 +17,29 @@ small object to read the values out of. The same description also builds a
 ## Usage
 
 ```rust
-import "github.com/martian56/raven-clap" { Command, Arg }
-import std/env { args }
+from "github.com/martian56/raven-clap" import Command, Arg
+from std.env import args
 
 fun main() {
-    let cmd = Command.new("greet")
-        .version("1.0")
-        .about("a tiny greeter")
-        .args([
+    let cmd = Command.new("greet").version("1.0").about("a tiny greeter").args(
+        [
             Arg.flag("loud", "l", "shout the greeting"),
             Arg.option("times", "n", "how many times to greet"),
             Arg.positional("name", "who to greet"),
-        ])
+        ],
+    )
 
     match cmd.parse(args()) {
-        Ok(m) -> {
+        case Ok(m) {
             if m.help() {
                 print(cmd.usage())
             } else {
                 let who = m.get_or("name", "world")
                 let loud = m.flag("loud")
-                // ...
             }
-        },
-        Err(e) -> print(e.to_string()),   // "unknown argument: --whoops"
+        }
+        // ...
+        case Err(e) { print(e.to_string()) } // "unknown argument: --whoops"
     }
 }
 ```
@@ -71,9 +70,9 @@ Pass `""` for `short` when there isn't a short form.
 | Method | Description |
 |--------|-------------|
 | `m.flag(name)` | Was the flag set (or the option/positional given)? |
-| `m.get(name)` | The value, as `Option<String>` |
+| `m.get(name)` | The value, as `Option[str]` |
 | `m.get_or(name, fallback)` | The value, or `fallback` |
-| `m.positional(i)` | The i-th positional, as `Option<String>` |
+| `m.positional(i)` | The i-th positional, as `Option[str]` |
 | `m.rest()` | Every positional, in order |
 | `m.help()` | Was `--help` or `-h` passed? |
 

@@ -1,7 +1,7 @@
-import std/string
-import std/collections
-import std/test { assert_eq_str, assert_eq_int, assert_true, assert_false, assert_msg }
-import "./lib" { Command, Arg, Matches }
+import std.string
+import std.collections
+from std.test import assert_eq_str, assert_eq_int, assert_true, assert_false, assert_msg
+from "./lib" import Command, Arg, Matches
 
 // A command with a flag, an option, and a positional, none required.
 fun base() -> Command {
@@ -15,14 +15,14 @@ fun base() -> Command {
 }
 
 // Parse, failing the test with the error if it does not succeed.
-fun parsed(cmd: Command, av: List<String>) -> Matches {
+fun parsed(cmd: Command, av: list[str]) -> Matches {
     return match cmd.parse(av) {
-        Ok(m) -> m,
-        Err(e) -> {
+        case Ok(m) { m }
+        case Err(e) {
             assert_msg(false, e.to_string())
-            let p: List<String> = []
-            Matches { values: Map.new(), positionals: p, help_seen: false }
-        },
+            let p: list[str] = []
+            Matches(values: Map.new(), positionals: p, help_seen: false)
+        }
     }
 }
 
@@ -47,12 +47,12 @@ fun test_positionals() {
     assert_eq_str(m.get_or("name", ""), "Alice")
     assert_eq_int(m.rest().len(), 2)
     match m.positional(1) {
-        Some(v) -> assert_eq_str(v, "Bob"),
-        None -> assert_msg(false, "p1"),
+        case Some(v) { assert_eq_str(v, "Bob") }
+        case None { assert_msg(false, "p1") }
     }
     match m.positional(5) {
-        Some(v) -> assert_msg(false, "out of range"),
-        None -> assert_true(true),
+        case Some(v) { assert_msg(false, "out of range") }
+        case None { assert_true(true) }
     }
 }
 
@@ -72,8 +72,8 @@ fun test_help() {
 fun test_required_missing() {
     let cmd = Command.new("tool").args([Arg.required("input", "i", "input")])
     match cmd.parse(["tool"]) {
-        Ok(m) -> assert_msg(false, "expected missing required"),
-        Err(e) -> assert_true(e.to_string().contains("input")),
+        case Ok(m) { assert_msg(false, "expected missing required") }
+        case Err(e) { assert_true(e.to_string().contains("input")) }
     }
 }
 
@@ -84,15 +84,15 @@ fun test_required_present() {
 
 fun test_unknown_arg() {
     match base().parse(["tool", "--nope"]) {
-        Ok(m) -> assert_msg(false, "expected unknown"),
-        Err(e) -> assert_true(e.to_string().contains("--nope")),
+        case Ok(m) { assert_msg(false, "expected unknown") }
+        case Err(e) { assert_true(e.to_string().contains("--nope")) }
     }
 }
 
 fun test_missing_value() {
     match base().parse(["tool", "--output"]) {
-        Ok(m) -> assert_msg(false, "expected missing value"),
-        Err(e) -> assert_true(e.to_string().contains("output")),
+        case Ok(m) { assert_msg(false, "expected missing value") }
+        case Err(e) { assert_true(e.to_string().contains("output")) }
     }
 }
 
