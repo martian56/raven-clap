@@ -11,7 +11,7 @@ small object to read the values out of. The same description also builds a
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-clap" = "v0.1.0"
+"github.com/martian56/raven-clap" = "v0.2.0"
 ```
 
 ## Usage
