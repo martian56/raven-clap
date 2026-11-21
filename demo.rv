@@ -2,10 +2,10 @@
 //   raven build demo.rv -o greet
 //   ./greet Alice --loud -n 2
 //   ./greet --help
-import std/io { print, println }
-import std/string
-import std/env { args }
-import "./lib" { Command, Arg }
+from std.io import print, println
+import std.string
+from std.env import args
+from "./lib" import Command, Arg
 
 fun main() {
     let cmd = Command.new("greet").version("1.0").about("a tiny greeter").args(
@@ -16,26 +16,26 @@ fun main() {
         ],
     )
     match cmd.parse(args()) {
-        Ok(m) -> {
+        case Ok(m) {
             if m.help() {
                 print(cmd.usage())
             } else {
                 let who = m.get_or("name", "world")
-                let line = "Hello, ".concat(who)
+                var line = "Hello, ".concat(who)
                 if m.flag("loud") {
                     line = line.concat("!")
                 }
                 let n = match m.get_or("times", "1").parse_int() {
-                    Some(x) -> x,
-                    None -> 1,
+                    case Some(x) { x }
+                    case None { 1 }
                 }
-                let i = 0
+                var i = 0
                 while i < n {
                     println(line)
                     i += 1
                 }
             }
-        },
-        Err(e) -> println(e.to_string()),
+        }
+        case Err(e) { println(e.to_string()) }
     }
 }
